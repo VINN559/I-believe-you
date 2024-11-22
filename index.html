@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pengeluaran Uang Kas</title>
+    <style>
+        /* Gaya untuk Navbar */
+        .navbar {
+            background-color: #1e3a8a;
+            /* Biru */
+            color: white;
+            padding: 15px;
+            text-align: center;
+            font-size: 1.2rem;
+        }
+
+        /* Gaya untuk kelas .class-8-3 */
+        .navbar.class-8-3 {
+            font-weight: bold;
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f7f9fc;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            width: 70%;
+            margin: 30px auto;
+            padding: 30px;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #1e3a8a;
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            font-size: 1.8rem;
+            margin-top: 20px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        label {
+            font-size: 1.1rem;
+            color: #333;
+            font-weight: bold;
+        }
+
+        input,
+        button {
+            padding: 12px;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            font-size: 1rem;
+            width: 100%;
+        }
+
+        input:focus,
+        button:focus {
+            border-color: #1e3a8a;
+            outline: none;
+        }
+
+        button {
+            background-color: #1e3a8a;
+            color: white;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #3b82f6;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 1.1rem;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid #ddd;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            font-weight: normal;
+        }
+
+        th {
+            background-color: #e3e4e8;
+            color: #1e3a8a;
+        }
+
+        td {
+            color: #555;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .delete-btn {
+            background-color: #ef4444;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .delete-btn:hover {
+            background-color: #dc2626;
+        }
+
+        .total-container {
+            margin-top: 20px;
+            text-align: right;
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .total-container span {
+            color: #1e3a8a;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                width: 90%;
+            }
+
+            table,
+            th,
+            td {
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navbar dengan kelas class-8-3 -->
+    <div class="navbar class-8-3">
+        Sistem Pengeluaran Uang Kas
+    </div>
+
+    <div class="container">
+        <h1>Pengeluaran Uang Kas</h1>
+
+        <!-- Form untuk input data pengeluaran -->
+        <form id="kasForm">
+            <label for="kategori">Kategori:</label>
+            <input type="text" id="kategori" required placeholder="Masukkan kategori">
+
+            <label for="jumlah">Jumlah:</label>
+            <input type="text" id="jumlah" required placeholder="Masukkan jumlah uang" oninput="formatRupiah(event)">
+
+            <label for="tanggal">Tanggal:</label>
+            <input type="date" id="tanggal" required>
+
+            <button type="submit">Tambah Pengeluaran</button>
+        </form>
+
+        <h2>Daftar Pengeluaran</h2>
+
+        <!-- Tabel untuk menampilkan data pengeluaran -->
+        <div class="table-container">
+            <table id="pengeluaranTable">
+                <thead>
+                    <tr>
+                        <th>Kategori</th>
+                        <th>Jumlah</th>
+                        <th>Tanggal</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+
+        <!-- Total pengeluaran -->
+        <div class="total-container">
+            Total Pengeluaran: <span id="totalPengeluaran">Rp 0</span>
+        </div>
+    </div>
+
+    <script>
+        // Fungsi untuk mendapatkan data dari localStorage
+        function getPengeluaranData() {
+            const data = localStorage.getItem('pengeluaranKas');
+            return data ? JSON.parse(data) : [];
+        }
+
+        // Fungsi untuk menyimpan data ke localStorage
+        function savePengeluaranData(data) {
+            localStorage.setItem('pengeluaranKas', JSON.stringify(data));
+        }
+
+        // Fungsi untuk menghitung total pengeluaran
+        function calculateTotal() {
+            const data = getPengeluaranData();
+            const total = data.reduce((sum, item) => sum + item.jumlah, 0);
+            document.getElementById('totalPengeluaran').textContent = `Rp ${total.toLocaleString()}`;
+        }
+
+        // Fungsi untuk menampilkan data pengeluaran di tabel
+        function displayPengeluaran() {
+            const data = getPengeluaranData();
+            const tbody = document.querySelector('#pengeluaranTable tbody');
+            tbody.innerHTML = ''; // Kosongkan tabel sebelum ditampilkan ulang
+
+            if (data.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="no-action">Tidak ada pengeluaran yang tercatat.</td></tr>`;
+            }
+
+            data.forEach((item, index) => {
+                const row = document.createElement('tr');
+
+                row.innerHTML = `
+          <td>${item.kategori}</td>
+          <td>Rp ${item.jumlah.toLocaleString()}</td>
+          <td>${item.tanggal}</td>
+          <td><button class="delete-btn" onclick="deletePengeluaran(${index})">Hapus</button></td>
+        `;
+
+                tbody.appendChild(row);
+            });
+
+            // Hitung total pengeluaran setelah menampilkan data
+            calculateTotal();
+        }
+
+        // Fungsi untuk menambah pengeluaran
+        function addPengeluaran(event) {
+            event.preventDefault();
+
+            const kategori = document.getElementById('kategori').value;
+            const jumlah = parseInt(document.getElementById('jumlah').value.replace(/\./g, '')); // Menghapus titik sebelum konversi
+            const tanggal = document.getElementById('tanggal').value;
+
+            if (!kategori || !jumlah || !tanggal) {
+                alert("Semua kolom harus diisi!");
+                return;
+            }
+
+            const data = getPengeluaranData();
+            data.push({ kategori, jumlah, tanggal });
+            savePengeluaranData(data);
+            displayPengeluaran();
+
+            // Reset form setelah tambah data
+            document.getElementById('kasForm').reset();
+        }
+
+        // Fungsi untuk menghapus pengeluaran berdasarkan index
+        function deletePengeluaran(index) {
+            const data = getPengeluaranData();
+            data.splice(index, 1); // Hapus data pada index tertentu
+            savePengeluaranData(data);
+            displayPengeluaran();
+        }
+
+        // Fungsi untuk memformat input jumlah uang dengan titik sebagai pemisah ribuan
+        function formatRupiah(event) {
+            let value = event.target.value.replace(/\D/g, ''); // Hanya mengambil angka
+            if (value) {
+                value = parseInt(value, 10).toString();
+                value = value.replace(/\B(?=(\d{3})+(?!\d))/g, '.'); // Menambahkan titik setiap tiga angka
+            }
+            event.target.value = value;
+        }
+
+        // Event listener untuk form submit
+        document.getElementById('kasForm').addEventListener('submit', addPengeluaran);
+
+        // Tampilkan data pengeluaran saat halaman dimuat
+        window.onload = displayPengeluaran;
+    </script>
+</body>
+
+</html>
